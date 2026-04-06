@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { getBillingProvider, mapCheckoutPlanTier } from "@/lib/billing/provider";
+import { trackServerEvent } from "@/lib/analytics/track";
 
 const checkoutSchema = z.object({
   plan: z.enum(["pro_monthly", "pro_annual"])
@@ -24,6 +25,8 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
+
+  trackServerEvent("checkout_started", { userId: user.id, plan: parsed.data.plan });
 
   const origin = new URL(req.url).origin;
   const successUrl = `${origin}/billing/success?plan=${parsed.data.plan}`;
@@ -47,6 +50,8 @@ export async function POST(req: Request) {
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       }
     });
+
+    trackServerEvent("subscription_success", { userId: user.id, plan: parsed.data.plan, mode: "mock" });
 
     return NextResponse.json({ url: successUrl });
   }

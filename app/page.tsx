@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CTAButtons } from "@/components/landing/cta-buttons";
 
 const steps = ["Audit", "Match", "Rewrite", "Explain", "Refine", "Export"];
 
@@ -16,10 +17,7 @@ export default function HomePage() {
           <p className="max-w-xl text-lg text-slate-600">
             Get a recruiter-style audit, keyword gap analysis, niche-specific rewrite, and export-ready LinkedIn copy in minutes.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/signup" className="rounded-lg bg-brand-600 px-5 py-3 font-medium text-white">Get my free profile score</Link>
-            <Link href="/demo" className="rounded-lg border border-slate-300 px-5 py-3 font-medium">See how it works</Link>
-          </div>
+          <CTAButtons />
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Sample outcome</p>

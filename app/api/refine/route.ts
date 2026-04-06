@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { refineText, type RefineStyle } from "@/lib/audit/refine";
+import { trackServerEvent } from "@/lib/analytics/track";
 
 const refineSchema = z.object({
   auditId: z.string().min(10),
@@ -54,6 +55,8 @@ export async function POST(req: Request) {
       refinesUsed: 1
     }
   });
+
+  trackServerEvent("refine_used", { userId: user.id, auditId: parsed.data.auditId, style: parsed.data.style });
 
   return NextResponse.json({ refined });
 }

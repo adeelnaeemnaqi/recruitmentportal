@@ -5,6 +5,7 @@ import { runAudit } from "@/lib/audit/engine";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/session";
 import { getAuditLimit } from "@/lib/billing/entitlements";
+import { trackServerEvent } from "@/lib/analytics/track";
 
 const auditInputSchema = z.object({
   currentProfileText: z.string().min(80),
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
 
   const auditLimit = getAuditLimit(planTier);
   if (usage.auditsUsed >= auditLimit) {
+    trackServerEvent("paywall_shown", { userId: user.id, reason: "audit_limit", planTier });
     return NextResponse.json(
       {
         error: "Monthly audit limit reached",
@@ -87,6 +89,8 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
+
+  trackServerEvent("audit_started", { userId: user.id, hasJobDescription: Boolean(parsed.data.jobDescriptionText) });
 
   const input = {
     ...parsed.data,
@@ -139,6 +143,8 @@ export async function POST(req: Request) {
     where: { id: usage.id },
     data: { auditsUsed: { increment: 1 } }
   });
+
+  trackServerEvent("audit_completed", { userId: user.id, auditId: saved.id, totalScore: saved.totalScore });
 
   return NextResponse.redirect(new URL(`/results/${saved.id}`, req.url));
 }

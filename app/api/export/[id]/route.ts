@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
+import { trackServerEvent } from "@/lib/analytics/track";
 
 function toTextPayload(report: {
   targetJobTitle: string;
@@ -65,6 +66,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       format
     }
   });
+
+  trackServerEvent("export_used", { userId: user.id, auditId: report.id, format });
 
   if (format === "json") {
     return NextResponse.json(report, {
