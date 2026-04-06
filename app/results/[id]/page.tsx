@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { Card } from "@/components/ui/card";
 import { auth } from "@/lib/auth/session";
+import { RefinePanel } from "@/components/results/refine-panel";
 
 export default async function ResultsPage({ params }: { params: { id: string } }) {
   const session = await auth();
@@ -28,6 +29,9 @@ export default async function ResultsPage({ params }: { params: { id: string } }
 
   const explanations = report.scoreExplanationsJson as Record<string, string>;
   const rewrite = report.rewriteOutputsJson as Record<string, unknown>;
+  const headlineSeed = Array.isArray((rewrite as { headlines?: unknown }).headlines)
+    ? String((rewrite as { headlines: unknown[] }).headlines[0] ?? "")
+    : String((rewrite as { experienceGuidance?: unknown }).experienceGuidance ?? "");
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -58,6 +62,10 @@ export default async function ResultsPage({ params }: { params: { id: string } }
 
         <Card title="Rewrite preview">
           <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(rewrite, null, 2)}</pre>
+        </Card>
+
+        <Card title="Refine and edit">
+          <RefinePanel auditId={report.id} initialText={headlineSeed} />
         </Card>
       </div>
     </div>

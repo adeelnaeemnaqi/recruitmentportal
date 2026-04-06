@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { PlanTier, ExperienceLevel, ProfileType } from "@prisma/client";
 import { z } from "zod";
-import { ExperienceLevel, ProfileType } from "@prisma/client";
 import { runAudit } from "@/lib/audit/engine";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/session";
+import { getAuditLimit } from "@/lib/billing/entitlements";
 
 const auditInputSchema = z.object({
   currentProfileText: z.string().min(80),
@@ -15,6 +16,23 @@ const auditInputSchema = z.object({
   targetLocation: z.string().optional().or(z.literal("")),
   jobDescriptionText: z.string().optional().or(z.literal(""))
 });
+
+function getCurrentPeriod() {
+  const now = new Date();
+  const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  return { periodStart, periodEnd };
+}
+
+async function getPlanTier(userId: string): Promise<PlanTier> {
+  const sub = await prisma.subscription.findFirst({
+    where: { userId, status: "active" },
+    orderBy: { updatedAt: "desc" },
+    select: { planTier: true }
+  });
+
+  return sub?.planTier ?? PlanTier.FREE;
+}
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -29,6 +47,37 @@ export async function POST(req: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const { periodStart, periodEnd } = getCurrentPeriod();
+  const planTier = await getPlanTier(user.id);
+  const usage = await prisma.usageRecord.upsert({
+    where: {
+      id: `${user.id}:${periodStart.toISOString()}`
+    },
+    update: {},
+    create: {
+      id: `${user.id}:${periodStart.toISOString()}`,
+      userId: user.id,
+      periodStart,
+      periodEnd,
+      auditsUsed: 0,
+      exportsUsed: 0,
+      refinesUsed: 0
+    }
+  });
+
+  const auditLimit = getAuditLimit(planTier);
+  if (usage.auditsUsed >= auditLimit) {
+    return NextResponse.json(
+      {
+        error: "Monthly audit limit reached",
+        paywall: true,
+        planTier,
+        auditLimit
+      },
+      { status: 402 }
+    );
   }
 
   const formData = await req.formData();
@@ -84,6 +133,11 @@ export async function POST(req: Request) {
         }
       }
     }
+  });
+
+  await prisma.usageRecord.update({
+    where: { id: usage.id },
+    data: { auditsUsed: { increment: 1 } }
   });
 
   return NextResponse.redirect(new URL(`/results/${saved.id}`, req.url));
