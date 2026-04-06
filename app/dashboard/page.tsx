@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/session";
 import { getAuditLimit } from "@/lib/billing/entitlements";
+import { ReportsList } from "@/components/dashboard/reports-list";
 
 function getCurrentPeriodStart() {
   const now = new Date();
@@ -59,15 +60,7 @@ export default async function DashboardPage() {
       </div>
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="mb-3 font-medium">Recent reports</h2>
-        <ul className="space-y-2 text-sm">
-          {reports.map((r) => (
-            <li key={r.id} className="flex items-center justify-between rounded-md border p-2">
-              <span>{r.targetJobTitle} · Score {r.totalScore}</span>
-              <Link className="underline" href={`/results/${r.id}`}>View</Link>
-            </li>
-          ))}
-          {reports.length === 0 ? <li className="text-slate-500">No reports yet. Run your first audit.</li> : null}
-        </ul>
+        <ReportsList reports={reports} />
       </div>
     </div>
   );
