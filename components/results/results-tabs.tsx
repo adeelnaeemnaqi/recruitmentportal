@@ -21,6 +21,10 @@ export function ResultsTabs({ auditId, explanations, rewrite, keywordCoverage, h
     return Array.isArray(raw) ? raw.map((h) => String(h)) : [];
   }, [rewrite]);
 
+  async function copyJson() {
+    await navigator.clipboard.writeText(JSON.stringify(rewrite, null, 2));
+  }
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap gap-2">
@@ -63,9 +67,14 @@ export function ResultsTabs({ auditId, explanations, rewrite, keywordCoverage, h
       {active === "Refine" ? <RefinePanel auditId={auditId} initialText={headlineSeed} /> : null}
 
       {active === "Export" ? (
-        <div className="space-y-2 text-sm text-slate-700">
-          <p>Export options are coming next: copy full package, plain text, and PDF.</p>
-          <button className="rounded-lg border px-3 py-2">Copy rewrite JSON</button>
+        <div className="space-y-3 text-sm text-slate-700">
+          <p>Export your report package for editing, sharing, or client delivery.</p>
+          <div className="flex flex-wrap gap-2">
+            <a className="rounded-lg border px-3 py-2" href={`/api/export/${auditId}?format=text`}>Download TXT</a>
+            <a className="rounded-lg border px-3 py-2" href={`/api/export/${auditId}?format=json`}>Download JSON</a>
+            <button onClick={() => void copyJson()} className="rounded-lg border px-3 py-2">Copy rewrite JSON</button>
+          </div>
+          <p className="text-xs text-slate-500">PDF export endpoint is scaffolded and will be enabled in the next phase.</p>
         </div>
       ) : null}
     </div>
