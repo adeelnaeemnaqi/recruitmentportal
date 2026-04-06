@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { Card } from "@/components/ui/card";
 import { auth } from "@/lib/auth/session";
-import { RefinePanel } from "@/components/results/refine-panel";
+import { ResultsTabs } from "@/components/results/results-tabs";
 
 export default async function ResultsPage({ params }: { params: { id: string } }) {
   const session = await auth();
@@ -34,8 +34,8 @@ export default async function ResultsPage({ params }: { params: { id: string } }
     : String((rewrite as { experienceGuidance?: unknown }).experienceGuidance ?? "");
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="space-y-4">
+    <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-4 lg:col-span-1">
         <Card title="Score summary">
           <p className="text-3xl font-bold">{report.totalScore}/100</p>
           <p className="mt-1 text-slate-600">Job Match: {report.jobMatchScore ?? "N/A"}</p>
@@ -51,22 +51,14 @@ export default async function ResultsPage({ params }: { params: { id: string } }
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <Card title="Audit explanations">
-          <ul className="space-y-2">
-            {Object.entries(explanations).map(([k, v]) => (
-              <li key={k}><strong className="capitalize">{k}:</strong> {v}</li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card title="Rewrite preview">
-          <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(rewrite, null, 2)}</pre>
-        </Card>
-
-        <Card title="Refine and edit">
-          <RefinePanel auditId={report.id} initialText={headlineSeed} />
-        </Card>
+      <div className="lg:col-span-2">
+        <ResultsTabs
+          auditId={report.id}
+          explanations={explanations}
+          rewrite={rewrite}
+          keywordCoverage={report.keywordAnalysis?.coveragePct}
+          headlineSeed={headlineSeed}
+        />
       </div>
     </div>
   );
