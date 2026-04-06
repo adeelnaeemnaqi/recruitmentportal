@@ -34,6 +34,10 @@ npm run build
 
 ## Billing modes
 - `BILLING_MODE=mock` (default): local/dev subscriptions are simulated.
+- `BILLING_MODE=live`: checkout URL is created via Paddle API (`/transactions`) using:
+  - `PADDLE_API_KEY`
+  - `PADDLE_PRICE_ID_MONTHLY`
+  - `PADDLE_PRICE_ID_ANNUAL`
 - For Paddle webhook sync, set `PADDLE_WEBHOOK_SECRET` and send webhook payloads with `custom_data.userId` and optional `custom_data.plan`.
 
 ## Current state
@@ -42,6 +46,6 @@ npm run build
 - CI + screenshots workflow scaffolding
 
 ## Next implementation focus
-- Paddle hosted checkout URL creation in billing provider
 - Export PDF endpoint
+- Richer rewrite/explanation quality
 - UX polish and loading/error states

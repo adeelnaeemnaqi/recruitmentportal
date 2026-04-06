@@ -56,18 +56,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: successUrl });
   }
 
-  const provider = getBillingProvider();
-  const url = await provider.createCheckoutUrl({
-    userId: user.id,
-    userEmail: user.email,
-    plan: parsed.data.plan,
-    successUrl,
-    cancelUrl
-  });
+  try {
+    const provider = getBillingProvider();
+    const url = await provider.createCheckoutUrl({
+      userId: user.id,
+      userEmail: user.email,
+      plan: parsed.data.plan,
+      successUrl,
+      cancelUrl
+    });
 
-  if (!url) {
-    return NextResponse.json({ error: "Checkout provider unavailable" }, { status: 503 });
+    if (!url) {
+      return NextResponse.json({ error: "Checkout provider unavailable" }, { status: 503 });
+    }
+
+    return NextResponse.json({ url });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Checkout initialization failed",
+        detail: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 502 }
+    );
   }
-
-  return NextResponse.json({ url });
 }
