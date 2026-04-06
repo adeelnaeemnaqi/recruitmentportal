@@ -32,12 +32,16 @@ npm run lint
 npm run build
 ```
 
+## Billing modes
+- `BILLING_MODE=mock` (default): local/dev subscriptions are simulated.
+- For Paddle webhook sync, set `PADDLE_WEBHOOK_SECRET` and send webhook payloads with `custom_data.userId` and optional `custom_data.plan`.
+
 ## Current state
 - Auth, onboarding, audit route, results view, refine controls
 - Pricing/account and mock billing flow
 - CI + screenshots workflow scaffolding
 
 ## Next implementation focus
-- Paddle checkout and webhook verification
+- Paddle hosted checkout URL creation in billing provider
 - Export PDF endpoint
 - UX polish and loading/error states

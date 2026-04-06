@@ -65,5 +65,9 @@ export async function POST(req: Request) {
     cancelUrl
   });
 
+  if (!url) {
+    return NextResponse.json({ error: "Checkout provider unavailable" }, { status: 503 });
+  }
+
   return NextResponse.json({ url });
 }
