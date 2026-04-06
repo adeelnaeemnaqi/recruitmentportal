@@ -25,6 +25,13 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
+## Testing
+```bash
+npm run test
+npm run lint
+npm run build
+```
+
 ## Current state
 - Auth, onboarding, audit route, results view, refine controls
 - Pricing/account and mock billing flow
@@ -32,6 +39,5 @@ Then open `http://localhost:3000`.
 
 ## Next implementation focus
 - Paddle checkout and webhook verification
-- Export (text/PDF)
-- Unit/integration tests
+- Export PDF endpoint
 - UX polish and loading/error states
