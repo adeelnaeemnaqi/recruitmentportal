@@ -17,6 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="flex items-center gap-4 text-sm">
               <Link href="/pricing" className="text-slate-600 hover:text-slate-900">Pricing</Link>
               <Link href="/demo" className="text-slate-600 hover:text-slate-900">Demo</Link>
+              <Link href="/roadmap" className="text-slate-600 hover:text-slate-900">Roadmap</Link>
               <Link href="/login" className="rounded-lg border px-3 py-1.5">Log in</Link>
               <Link href="/signup" className="rounded-lg bg-brand-600 px-3 py-1.5 text-white">Get score</Link>
             </nav>
